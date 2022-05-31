@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Cinemachine;
 
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerController : MonoBehaviour
@@ -10,19 +11,27 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float movementSpeed;
     [SerializeField] private float runningSpeed;
     [SerializeField] private float jumpForce;
+    [SerializeField] private float mouseSensitivityX;
+    [SerializeField] private float mouseSensitivityY;
 
     [Header("Other")]
+    [SerializeField] private CinemachineVirtualCamera vPlayerCam;
     [SerializeField] private float mass = 70;
     [SerializeField] private float smoothTime;
 
+    private int money;
     private float speed;
+    private float yaw;
+    private float pitch;
+    private float minPitch = 0f;
+    private float maxPitch = 10f;
     private bool isGrounded = true;
-    private bool canJump = true;
-
-    private Rigidbody rb;
+    private Vector2 pitchClamp = new Vector2(0, 10);
     private Vector3 targetVelocity;
     private Vector3 smoothVelocity;
+    private Vector3 initialCameraOffset;
     private Vector3 smoothedCurrentVelocity;
+    private Rigidbody rb;
     private Planet currentPlanet;
     private new Transform transform;
 
@@ -47,6 +56,15 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private void MovementHandler()
     {
+        yaw = Input.GetAxis("Mouse X");
+        pitch = Input.GetAxis("Mouse Y");
+        if (isGrounded)
+        {
+            Cinemachine.CinemachineTransposer tr = vPlayerCam.GetCinemachineComponent<Cinemachine.CinemachineTransposer>();
+            tr.m_FollowOffset.y += pitch * mouseSensitivityY;
+            tr.m_FollowOffset.y = Mathf.Clamp(tr.m_FollowOffset.y, minPitch, maxPitch);
+        }
+
         float fwdInput = Input.GetAxis("Vertical");
         float rghtInput = Input.GetAxis("Horizontal");
         float fwdMovement = fwdInput * speed * Time.deltaTime;
@@ -76,7 +94,6 @@ public class PlayerController : MonoBehaviour
             } 
         }
     }
-
 
     #region GRAVITY_SIMULATION
 
@@ -134,8 +151,15 @@ public class PlayerController : MonoBehaviour
         }
         // Align the player towards the planet
         Vector3 gravityDirection = nearestPlanetGravity.normalized;
-        rb.rotation = Quaternion.FromToRotation(transform.up, -gravityDirection) * rb.rotation;
+        if (!isGrounded)
+        {
+            yaw = 0;
+        }
+        rb.rotation = Quaternion.FromToRotation(transform.up, -gravityDirection) 
+            * rb.rotation 
+            * Quaternion.Euler(new Vector3(0f, yaw * mouseSensitivityX * Time.deltaTime, 0f));
         rb.MovePosition(rb.position + smoothVelocity * Time.fixedDeltaTime);
+
     }
     #endregion
 
@@ -159,7 +183,6 @@ public class PlayerController : MonoBehaviour
         //TODO: Da sistemare cambiando il check
         if (collision.gameObject.name == "Earth")
         {
-            Debug.Log("INSIDE COLLSION IF");
             isGrounded = true;
         }
     }
@@ -172,17 +195,28 @@ public class PlayerController : MonoBehaviour
         InitRigidbodySettings();
         transform = this.gameObject.transform;
         speed = movementSpeed;
+        initialCameraOffset = vPlayerCam.GetCinemachineComponent<Cinemachine.CinemachineTransposer>().m_FollowOffset;
     }
 
     private void Start()
     {
         GameManager.Instance.playerReference = this;
+        currentPlanet = GameManager.Instance.currentPlanet;
+        Cursor.lockState = CursorLockMode.Locked;
+
+        Debug.Log($"Al momento in saccoccia ho {GameManager.Instance.money} monete!");
     }
 
 
     private void Update()
     {
         MovementHandler();
+        // Da rimuovere una volta che integro i collezionabili
+        if (Input.GetKeyDown(KeyCode.M))
+        {
+            GameManager.Instance.money++;
+            Debug.Log($"Che bello, ho raccolto una moneta, ora ho: {GameManager.Instance.money} monete!");
+        }
     }
 
     private void FixedUpdate()

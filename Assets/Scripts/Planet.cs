@@ -90,6 +90,7 @@ public class Planet : MonoBehaviour
         {
             mass = rb.mass;
         }
+        RotatePlanet();
     }
 
     private void OnValidate()
