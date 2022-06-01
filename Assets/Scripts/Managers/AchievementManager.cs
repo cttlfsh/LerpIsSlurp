@@ -5,9 +5,30 @@ using UnityEngine;
 
 public class AchievementManager : MonoBehaviour
 {
+    public enum AchievmentTypes
+    {
+        BOSSFIGHT,
+        KILL,
+        COLLECTION,
+        DISCOVERY
+    }
+
     public static AchievementManager Instance;
 
     public List<Achievement> achievements = new List<Achievement>();
+    
+    public AudioSource achievementAudio;
+
+    /// <summary>
+    /// Checks if an achievement has been reached and unlocks it.
+    /// </summary>
+    /// <param name="type">Type of the achievement to check</param>
+    /// <param name="count"></param>
+    public void CheckAchievement(AchievmentTypes type, int count = 0)
+    {
+        
+    }
+
 
     private void Awake()
     {
@@ -20,28 +41,7 @@ public class AchievementManager : MonoBehaviour
 
     private void Start()
     {
-        if (LoadAchievementsPref())
-        {
-            // Ho gia' inizializzato la prima volta gli ach
-        }
-        else
-        {
-            InitializeAchievements();
-        }
-    }
+        GameManager.Instance.achievementManager = this;
 
-
-
-
-
-    // TODO: DA TOGLIERE E METTERE DOVE SALVO/CARICO GLI ACHIEVEMENTS
-    private bool LoadAchievementsPref()
-    {
-        throw new NotImplementedException();
-    }
-
-    private void InitializeAchievements()
-    {
-        throw new NotImplementedException();
     }
 }

@@ -7,14 +7,18 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
+    [Header("Managers")]
+    public PersistenceManager persistenceManager;
+    public SolarSystemManager solarSystemManager;
+    public AchievementManager achievementManager;
+
     public int money;
     public Planet currentPlanet;
     public PlayerController playerReference;
 
-    // TODO: Da sistemare, probabilmente andra' in un UIManager o simili
-    private void LoadPlayerData()
+    private void SetupGame()
     {
-        if (SaveGameSystem.LoadPlayerData(out PlayerData pd))
+        if (persistenceManager.LoadPlayerData(out PlayerData pd))
         {
             money = pd.moneyAmount;
         }
@@ -33,8 +37,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        currentPlanet = SolarSystemManager.Instance.bodies[0];
-        LoadPlayerData();
+        SetupGame();
     }
 
     private void Update()
@@ -43,15 +46,12 @@ public class GameManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.K))
         {
             Debug.Log("Salvo i dati di gioco");
-            SaveGameSystem.SavePlayerData(playerReference);
+            persistenceManager.SavePlayerData(playerReference);
         }
 
         if (Input.GetKeyDown(KeyCode.L))
         {
-            LoadPlayerData();
-        }
-        {
-
+            persistenceManager.LoadPlayerData(out PlayerData pd);
         }
     }
 

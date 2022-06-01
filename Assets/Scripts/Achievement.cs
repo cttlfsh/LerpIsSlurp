@@ -17,13 +17,9 @@ public class Achievement
         image = img;
     }
 
-    public void CheckCompletion()
+    public void UnlockAchievement()
     {
-        // da cambiare con le PlayerPrefs
-        if (achieved)
-        {
-            return;
-        }
+        
     }
 
 }

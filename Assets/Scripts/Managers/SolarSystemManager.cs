@@ -18,6 +18,12 @@ public class SolarSystemManager: MonoBehaviour
         Time.fixedDeltaTime = Universe.physicsTimeStep;
     }
 
+    private void Start()
+    {
+        GameManager.Instance.solarSystemManager = this;
+        GameManager.Instance.currentPlanet = bodies[0];
+    }
+
     private void FixedUpdate()
     {
         for (int i = 0; i < bodies.Length; i++)
