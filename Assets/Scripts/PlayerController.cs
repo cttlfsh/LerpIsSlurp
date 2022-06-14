@@ -19,7 +19,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float mass = 70;
     [SerializeField] private float smoothTime;
 
-    private int money;
     private float speed;
     private float yaw;
     private float pitch;
@@ -92,6 +91,25 @@ public class PlayerController : MonoBehaviour
             {
                 rb.AddForce(-transform.up * currentPlanet.gravity, ForceMode.Acceleration);
             } 
+        }
+    }
+
+    private void Interact()
+    {
+        float maxDistanceRaycast = 10f;
+        RaycastHit hitInfo;
+
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            print("ciao");
+            Debug.DrawRay(vPlayerCam.transform.position, vPlayerCam.transform.forward * 10, Color.red);
+            if (Physics.Raycast(vPlayerCam.transform.position, vPlayerCam.transform.forward, out hitInfo, maxDistanceRaycast))
+            {
+                if (hitInfo.transform.TryGetComponent(out IInteractable tempInteractable))
+                {
+                    tempInteractable.Interact();
+                }
+            }
         }
     }
 
@@ -186,6 +204,14 @@ public class PlayerController : MonoBehaviour
             isGrounded = true;
         }
     }
+
+    private void OnTriggerEnter(Collider collision)
+    {
+        if (collision.gameObject.TryGetComponent<ICollectable>(out ICollectable tempCollectables))
+        {
+            tempCollectables.Pickup();
+        }
+    }
     #endregion
 
     #region UNITY_METHODS
@@ -217,6 +243,8 @@ public class PlayerController : MonoBehaviour
             GameManager.Instance.money++;
             Debug.Log($"Che bello, ho raccolto una moneta, ora ho: {GameManager.Instance.money} monete!");
         }
+
+        Interact();
     }
 
     private void FixedUpdate()
